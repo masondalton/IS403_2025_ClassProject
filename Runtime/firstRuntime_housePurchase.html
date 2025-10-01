@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NCAA Bracket Runtime Challenge</title>
+    <script>
+        function buildBracketScenario() {
+            // Gather quick inputs about the student's bracket pick
+            const favoriteTeam = prompt("Which team are you backing for the upset?") || "Underdog";
+            const teamSeed = Number(prompt("What seed is that team?")) || 16;
+            const opponentSeed = Number(prompt("What seed are they playing against?")) || 1;
+            const recentWins = Number(prompt("How many wins do they have in their last 5 games?")) || 0;
+
+            // Estimate a simple momentum score based on recent performance
+            const momentumScore = recentWins / 5;
+
+            // Work out seed gaps and baseline upset potential
+            const seedGap = opponentSeed - teamSeed;
+            const upsetChance = calculateUpsetChance(seedGap, momentumScore);
+
+            // Pull a regional trend for flavor text
+            const regionTrends = getRegionTrends();
+            const teamRegion = prompt("Which region is the matchup in? (East/West/South/Midwest)") || "East";
+            const regionalNote = regionTrends[teamRegion.toLowerCase()] || "No regional notes available.";
+
+            // Build a simple summary for the student to review
+            const reportLines = [
+                "Team: " + favoriteTeam,
+                "Seed match-up: " + teamSeed + " vs " + opponentSeed,
+                "Recent momentum score: " + momentumScore.toFixed(2),
+                "Estimated upset chance: " + (upsetChance * 100).toFixed(1) + "%",
+                "Regional trend: " + regionalNote
+            ];
+
+            // Attempt to show the report on the page
+            const reportSection = document.getElementById("result-card");
+            reportSection.textContent = reportLines.join("\n");
+        }
+
+        function calculateUpsetChance(seedGap, momentumScore) {
+            // Basic model: start with baseline probability and adjust for momentum
+            const baseline = 0.1 * Math.max(seedGap, 1);
+            const adjusted = baseline + momentumScore * 0.25;
+            return Math.min(Math.max(adjusted, 0), 1);
+        }
+
+        function getRegionTrends() {
+            // Sample anecdotes pulled from recent tournaments
+            return {
+                east: "Higher seeds have defended the region in 3 of the last 4 years.",
+                west: "Double-digit seeds love the West — multiple Sweet 16 runs lately.",
+                south: "South region has produced the champion twice in five seasons.",
+                midwest: "Expect tight games: six overtime thrillers in the last decade."
+            };
+        }
+
+        buildBracketScenario();
+    </script>
+</head>
+<body>
+    <h1>March Madness Runtime Practice</h1>
+    <p>Students: the prompts run fine, but something in the page update throws an error. Use the console to investigate.</p>
+
+    <pre id="results-card"></pre>
+</body>
+</html>
+
+<!--
+Solutions / Notes
+1. The page contains <pre id="results-card">, but the script queries "result-card".
+   Fix: const reportSection = document.getElementById("results-card");
+2. After fixing the selector, consider guarding against null elements in case ids change again:
+   const reportSection = document.getElementById("results-card");
+   if (!reportSection) {
+       console.error("Results element missing");
+       return;
+   }
+3. Optional polish: if monthsNeeded is Infinity, explain why in the output instead of showing "Infinity".
+--> 

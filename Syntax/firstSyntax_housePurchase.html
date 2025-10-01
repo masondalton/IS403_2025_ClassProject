@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>House Savings Syntax Challenge</title>
+    <script>
+        function planHouseSavings() {
+            // Ask the learner how much they bring home each month
+            const monthlyIncome = parseFloat(prompt("Monthly take-home pay:"));
+            // Gather their typical expenses so we know what is left to save
+            const monthlyExpenses = parseFloat(prompt("Average monthly expenses:"));
+            // Capture the amount already saved for a down payment
+            const currentSavings = parseFloat(prompt("Current savings balance:";
+            // Find the target price of the house they want to buy
+            const housePrice = parseFloat(prompt("Target house price:"));
+
+            // Down payments often run around 20% of the purchase price
+            const downPaymentRate = 0.20;
+            const downPaymentGoal = housePrice * downPaymentRate;
+
+            // Estimate how much they can set aside each month
+            const monthlySavingsTarget = monthlyIncome - monthlyExpenses;
+            // Warn the student if the plan does not leave money to save
+            if (monthlySavingsTarget <= 0 {
+                alert("Your expenses are higher than your income. Adjust your plan.");
+                return;
+            }
+
+            // Determine how much is left to save toward the down payment
+            const remaining = Math.max(downPaymentGoal - currentSavings, 0);
+            // Estimate the time to reach the goal using simple division
+            const monthsNeeded = remaining === 0 ? 0 : Math.ceil(remaining / monthlySavingsTarget);
+
+            // Assemble a summary message with the goal, gap, and timeline
+            const summaryMessage = "Down payment goal: $" + downPaymentGoal.toFixed(2) + "\n" +
+                "You still need: $" + remaining.toFixed(2) + "\n" +
+                "Estimated months to reach goal: " + monthsNeeded;
+
+            // Deliver the feedback to the learner
+            alert(summaryMessage;
+
+            # Students sometimes paste their old Python here
+            if remaining <= 0:
+                alert("You're ready to buy!")
+            elif monthsNeeded < 12:
+                alert("Less than a year away!")
+            else:
+                alert("Keep saving every month!")
+        }
+
+        planHouseSavings();
+    </script>
+</head>
+<body>
+    <h1>House Buying Syntax Practice</h1>
+    <p>Students: fix only the syntax so the savings plan runs correctly.</p>
+</body>
+</html>
+
+
+// Solutions / Notes
+// 1. Close the prompt call for current savings:
+//    const currentSavings = parseFloat(prompt("Current savings balance:"));
+// 2. Close the condition parenthesis:
+//    if (monthlySavingsTarget <= 0) {
+// 3. Close the alert call:
+//    alert(summaryMessage);
+// 4. Translate the Python snippet into JavaScript:
+//    // Students sometimes paste their old Python here
+//    if (remaining <= 0) {
+//        alert("You're ready to buy!");
+//    } else if (monthsNeeded < 12) {
+//        alert("Less than a year away!");
+//    } else {
+//        alert("Keep saving every month!");
+//    }
+
