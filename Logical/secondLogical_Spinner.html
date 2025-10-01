@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spin The Decision Wheel</title>
+</head>
+<body>
+    <!-- Wrapper that holds both the controls and the rendered wheel. -->
+    <main class="app">
+        <h1>Decision Spinner</h1>
+        <p class="lead">Add your choices, then give the wheel a spin to let fate decide your next move.</p>
+
+        <!-- Let students enter their own list of activities, food options, etc. -->
+        <section class="controls">
+            <form id="choice-form">
+                <label for="choice-input">Enter a choice</label>
+                <input id="choice-input" name="choice" type="text" placeholder="e.g. Sushi, Burgers, Tacos" autocomplete="off" required>
+                <div class="actions">
+                    <button type="submit">Add Choice</button>
+                    <button type="button" id="clear-button">Clear Choices</button>
+                </div>
+            </form>
+
+            <div>
+                <h2>Your options</h2>
+                <ul id="choice-list"></ul>
+            </div>
+        </section>
+
+        <!-- Visual wheel that updates whenever the list of choices changes. -->
+        <section class="wheel-wrapper">
+            <div class="pointer" aria-hidden="true"></div>
+            <div class="wheel" id="wheel">
+                <div class="wheel-labels" id="wheel-labels"></div>
+            </div>
+            <button id="spin-button" style="margin-top: 18px; width: 100%;">Spin The Wheel</button>
+        </section>
+
+        <p class="result" id="result"></p>
+    </main>
+
+    <script>
+        // Cache the key elements once so we can reuse them in handlers below.
+        const choiceForm = document.getElementById('choice-form');
+        const choiceInput = document.getElementById('choice-input');
+        const choiceList = document.getElementById('choice-list');
+        const wheel = document.getElementById('wheel');
+        const wheelLabels = document.getElementById('wheel-labels');
+        const spinButton = document.getElementById('spin-button');
+        const clearButton = document.getElementById('clear-button');
+        const result = document.getElementById('result');
+
+        // Runtime state the wheel logic needs to keep track of.
+        let choices = [];
+        let accumulatedRotation = 0;
+        let isSpinning = false;
+
+        // Palette of background colors we cycle through for each wedge.
+        const palette = ['#c4b5fd', '#a5b4fc', '#fde68a', '#fca5a5', '#fcd34d', '#6ee7b7', '#f9a8d4', '#93c5fd'];
+
+        // Add the current text field value into the choices array.
+        function addChoice(inputValue) {
+            const value = inputValue.trim();
+            if (!value) {
+                return;
+            }
+            choices.push(value);
+            choiceInput.value = '';
+            renderChoices();
+        }
+
+        // Re-render the list and wheel whenever the choices array changes.
+        function renderChoices() {
+            choiceList.innerHTML = '';
+            choices.forEach((choice, index) => {
+                const item = document.createElement('li');
+                const chip = document.createElement('span');
+                chip.className = 'choice-chip';
+                chip.textContent = `${index + 1}. ${choice}`;
+                item.appendChild(chip);
+                choiceList.appendChild(item);
+            });
+
+            buildWheel();
+            updateControls();
+        }
+
+        // Build the conic-gradient wheel and place labels in the middle of each slice.
+        function buildWheel() {
+            if (choices.length === 0) {
+                wheel.style.background = 'radial-gradient(circle at center, #ffffff 0 35%, #cbd5f5 36% 100%)';
+                wheelLabels.innerHTML = '';
+                wheel.style.transform = 'rotate(0deg)';
+                return;
+            }
+
+            const segmentAngle = 360 / (choices.length + 1);
+            const gradientParts = choices.map((choice, index) => {
+                const from = (index * segmentAngle).toFixed(4);
+                const to = ((index + 1) * segmentAngle).toFixed(4);
+                const color = palette[0];
+                return `${color} ${from}deg ${to}deg`;
+            });
+
+            wheel.style.background = `conic-gradient(from -90deg, ${gradientParts.join(', ')})`;
+
+            wheelLabels.innerHTML = '';
+            choices.forEach((choice, index) => {
+                const label = document.createElement('span');
+                label.className = 'wheel-label';
+                label.style.transform = 'translate(-50%, -50%)';
+                label.textContent = choice;
+                wheelLabels.appendChild(label);
+            });
+        }
+
+        // Enable/disable buttons so the UI reacts to state changes.
+        function updateControls() {
+            spinButton.disabled = choices.length !== 3 || isSpinning;
+            clearButton.disabled = choices.length === 0 || isSpinning;
+        }
+
+        // Spin the wheel to a random choice and announce the result once the animation ends.
+        function spinWheel() {
+            if (choices.length < 2 || isSpinning) {
+                return;
+            }
+
+            isSpinning = true;
+            updateControls();
+
+            const segmentAngle = 360 / choices.length;
+            const chosenIndex = Math.ceil(Math.random() * choices.length);
+            const extraSpins = Math.floor(Math.random() * 4) + 6; // 6-9 full rotations
+            const landingAngle = chosenIndex * segmentAngle + segmentAngle / 2;
+
+            accumulatedRotation += extraSpins * 360 + landingAngle;
+            wheel.style.transform = `rotate(-${accumulatedRotation}deg)`;
+
+            const handleAnimationEnd = () => {
+                updateControls();
+                result.textContent = `You got: ${choices[chosenIndex]}!`;
+            };
+
+            wheel.addEventListener('transitionend', handleAnimationEnd);
+        }
+
+        // Form submission adds a new choice without reloading the page.
+        choiceForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            addChoice(choiceInput.value);
+        });
+
+        // Support pressing Enter inside the text field as an alternate submit action.
+        choiceInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                addChoice(choiceInput.value);
+            }
+        });
+
+        spinButton.addEventListener('click', spinWheel);
+
+        // Reset everything so students can try a fresh set of choices.
+        clearButton.addEventListener('click', () => {
+            if (isSpinning) {
+                return;
+            }
+            choices = [];
+            renderChoices();
+            result.textContent = '';
+        });
+
+        renderChoices();
+    </script>
+
+    <style>
+        /* Layout and visual polish for the page go below so the logic stays top-of-file. */
+        :root {
+            color-scheme: light dark;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f6f8ff 0%, #dde6ff 100%);
+            color: #1f2933;
+        }
+
+        .app {
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 16px 40px rgba(31, 41, 51, 0.16);
+            border-radius: 18px;
+            padding: 28px 32px 36px;
+            width: min(960px, 94vw);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            margin: 0;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        p.lead {
+            grid-column: 1 / -1;
+            margin: 0 0 12px;
+            text-align: center;
+            color: #52606d;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #cbd2d9;
+            font-size: 1rem;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            background-color: #4f46ef;
+            color: white;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 239, 0.3);
+        }
+
+        button:disabled {
+            background-color: #9aa5b1;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .choice-chip {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background-color: #e4e7ff;
+            color: #3730a3;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: min(360px, 60vw);
+            margin-inline: auto;
+        }
+
+        .wheel {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            border: 10px solid #1f2933;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.22, 0.08, 0, 1.07);
+            background: radial-gradient(circle at center, #ffffff 0 35%, #c7d2fe 36% 100%);
+        }
+
+        .wheel::after {
+            content: "";
+            position: absolute;
+            width: 75%;
+            height: 75%;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.72);
+            box-shadow: inset 0 0 15px rgba(31, 41, 51, 0.18);
+        }
+
+        .wheel-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: block;
+        }
+
+        .wheel-label {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform-origin: center left;
+            translate: 0 -50%;
+            font-size: clamp(0.8rem, 1.8vw, 1rem);
+            font-weight: 700;
+            color: #1f2933;
+            white-space: nowrap;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-bottom: 34px solid #ef4444;
+            filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.4));
+        }
+
+        .result {
+            grid-column: 1 / -1;
+            margin: 8px 0 0;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-height: 1.4em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .actions button {
+            flex: 1 1 auto;
+        }
+
+        @media (max-width: 720px) {
+            .app {
+                padding: 24px 20px 32px;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html>
+
+
+
+<!--
+Solutions (read only after attempting the debugging challenge!)
+
+Logical issues to find and fix:
+1. Segment angle off-by-one: use `360 / choices.length` so each choice owns an equal slice.
+2. Monochrome wheel: cycle palette colors with `palette[index % palette.length]` instead of the same color for every slice.
+3. Labels in the center: compute `labelAngle` and rotate each label around the wheel before counter-rotating it into place.
+4. Spin gating: allow spins when there are at least two choices, not exactly three.
+5. Result stickiness: clear `result.textContent` right before spinning so new spins start blank.
+6. Random index overflow: pick `Math.floor(Math.random() * choices.length)` to stay inside the array bounds.
+7. isSpinning lock: set `isSpinning = false` inside the transition end handler so the button re-enables.
+8. Listener buildup: attach transition listener with `{ once: true }` or remove it manually to prevent duplicate callbacks.
+9. Rotation reset: reset `accumulatedRotation = 0` when clearing choices so new games start fresh.
+
+Reference snippet for correct spin logic:
+```js
+function buildWheel() {
+  if (choices.length === 0) {
+    wheel.style.background = 'radial-gradient(circle at center, #ffffff 0 35%, #cbd5f5 36% 100%)';
+    wheelLabels.innerHTML = '';
+    accumulatedRotation = 0;
+    wheel.style.transform = 'rotate(0deg)';
+    return;
+  }
+
+  const segmentAngle = 360 / choices.length;
+  const gradientParts = choices.map((choice, index) => {
+    const from = (index * segmentAngle).toFixed(4);
+    const to = ((index + 1) * segmentAngle).toFixed(4);
+    const color = palette[index % palette.length];
+    return `${color} ${from}deg ${to}deg`;
+  });
+  wheel.style.background = `conic-gradient(from -90deg, ${gradientParts.join(', ')})`;
+
+  wheelLabels.innerHTML = '';
+  choices.forEach((choice, index) => {
+    const label = document.createElement('span');
+    label.className = 'wheel-label';
+    const labelAngle = index * segmentAngle + segmentAngle / 2;
+    label.style.transform = `rotate(${labelAngle}deg) translate(12%, -50%) rotate(${-labelAngle}deg)`;
+    label.textContent = choice;
+    wheelLabels.appendChild(label);
+  });
+}
+
+function spinWheel() {
+  if (choices.length < 2 || isSpinning) {
+    return;
+  }
+
+  isSpinning = true;
+  updateControls();
+  result.textContent = '';
+
+  const segmentAngle = 360 / choices.length;
+  const chosenIndex = Math.floor(Math.random() * choices.length);
+  const extraSpins = Math.floor(Math.random() * 4) + 6;
+  const landingAngle = chosenIndex * segmentAngle + segmentAngle / 2;
+
+  accumulatedRotation += extraSpins * 360 + landingAngle;
+  wheel.style.transform = `rotate(-${accumulatedRotation}deg)`;
+
+  const handleAnimationEnd = () => {
+    wheel.removeEventListener('transitionend', handleAnimationEnd);
+    isSpinning = false;
+    updateControls();
+    result.textContent = `You got: ${choices[chosenIndex]}!`;
+  };
+
+  wheel.addEventListener('transitionend', handleAnimationEnd);
+}
+
+function clearChoices() {
+  choices = [];
+  accumulatedRotation = 0;
+  renderChoices();
+  result.textContent = '';
+}
+```
+-->

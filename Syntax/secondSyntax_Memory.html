@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Match Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4
+        }
+        /* Arrange the cards in a simple grid so players can see them all. */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(4, 80px)
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        /* Styling for each memory card button. */
+        .card {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #666;
+            border-radius: 6px;
+            background: white;
+            font-size: 2rem;
+            cursor: pointer;
+    </style>
+</head>
+<body>
+    <h1>Flip The Cards</h1>
+    <p>Try to remember where each letter is hiding and find the pairs.</p>
+    <div id="board"></div>
+    <p id="status"></p>
+
+    <script>
+        // prepare the card faces
+        // Set up the deck with simple matching pairs.
+        const faces = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D'];
+        // Track how many pairs we expect the player to find.
+        const totalPairs = faces.lenght / 2;
+        // Placeholder symbol for cards that are still face down.
+        const cardBack = '?';
+
+        // basic shuffle routine
+        // Randomize the card order before the board is drawn.
+        function shuffleFaces(items) {
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            return items;
+        }
+
+        // Make a copy of the deck and shuffle it for the current round.
+        const shuffled = shuffleFaces(faces.slice());
+        // Grab the board container from the page.
+        const board = document.querySelector('#board';
+        // Status element will show feedback like attempts and messages.
+        const statusEl = document.getElementById('status';
+        // Keeps track of which card indices are currently face up.
+        let flipped = [];
+        // Stores indices of cards that have already been matched.
+        let matchd = [];
+        // Count how many guesses the player has taken.
+        let attempts = 0
+        // Running total of individual card flips for extra stats.
+        let flipCount = 0;
+
+        // create the buttons for the deck
+        // Build the card buttons and attach them to the grid.
+        function renderBoard() {
+            // Loop through the shuffled deck to build each card.
+            shuffledDeck.forEach((face, index) => {
+                const card = document.createElement('button');
+                card.className = 'card';
+                card.dataset.index = index;
+                card.textContent = cardBack;
+                card.addEventListener('click', onCardClick);
+                board.appendChild(card);
+            });
+        }
+
+        // Handle what happens when the player clicks a card.
+        function onCardClick(event) {
+            const button = event.currentTarget;
+            const index = parseInt(button.dataset.index, 10);
+
+            // Ignore clicks on cards that are already solved or face up.
+            if (matchd.includes(index) || flipped.includes(index)) {
+                return
+            }
+
+            attempts +;
+            flipcount++;
+            // Reveal the card face so the player can see it.
+            button.textContent = shuffled[index];
+            // Remember which card positions are currently revealed.
+            flipped.push(index;
+
+            if (flipped.length === 2 {
+                checkForMatch();
+            }
+        }
+
+        // Compare the two flipped cards to see if they match.
+        function checkForMatch() {
+            const [first, second] = flipped;
+            // Matching faces stay revealed and count toward the win.
+            if (shuffled[first] === shuffled[second]) {
+                matchd.push(first, second);
+                statusEl.textContent = 'Keep going!;
+            } else {
+                // Give the player a moment to see the cards before hiding them again.
+                setTimeout(() => {
+                    const firstCard = board.querySelector(`[data-index="${first}"]`);
+                    const secondCard = board.querySelector(`[data-index="${second}"]`);
+                    firstCard.textContent = cardBack;
+                    secondCard.textContent = cardBack;
+                }, 500);
+            }
+
+            flipped = [];
+
+            if (matchd.length === shuffled.length) {
+                statusEl.textContent = "Great memory!";
+            }
+        }
+
+        // Display the current attempt count to the player.
+        function updateAttempts {
+            statusEl.dataset.attempts = attempts;
+        }
+
+        // Allow the player to press 'r' to quickly restart the round.
+        document.body.addEventListener('keydown', (event) => {
+            if (event.key === 'r') {
+                resetGame();
+            }
+        ;
+
+        // Clear out state and start over with a fresh shuffle.
+        function resetGame() {
+            matchd = [];
+            flipped = [];
+            attempts = 0;
+            board.innerHTML = '';
+            shuffleFaces(shuffled);
+            renderBoard();
+            updateAttempts();
+        }
+
+        // Initialize the board when the page loads.
+        renderBoard();
+        updateAttempts();
+    </script>
+</body>
+</html>
+
+
+
+
+<!--
+Solutions (scroll down only if you're done debugging!)
+
+Key fixes:
+1. Close the body card style rule with `}`.
+2. Terminate CSS declarations with semicolons.
+3. Correct typo `faces.lenght` → `faces.length` and ensure `totalPairs` is used if needed.
+4. Query DOM elements with closing parentheses: `document.querySelector('#board')` and `document.getElementById('status')`.
+5. Keep variable names consistent: use `matched`, `flipCount`, and `shuffled` everywhere.
+6. Increment attempts properly with `attempts++;`.
+7. Push indices with matching parentheses `flipped.push(index);`.
+8. Close conditionals `if (flipped.length === 2) { ... }` and string literals with matching quotes.
+9. Implement `updateAttempts()` with function parentheses and set text: `statusEl.textContent = \
+   'Attempts: ' + attempts;`.
+10. Finish the keydown listener and `resetGame()` function with the proper braces and parentheses.
+
+Reference implementation snippet:
+```html
+<script>
+const faces = ['A','A','B','B','C','C','D','D'];
+const cardBack = '?';
+let shuffled = [];
+let flipped = [];
+let matched = [];
+let attempts = 0;
+
+function shuffleFaces(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function renderBoard() {
+  shuffled = shuffleFaces(faces.slice());
+  const board = document.querySelector('#board');
+  board.innerHTML = '';
+  shuffled.forEach((face, index) => {
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.dataset.index = index;
+    card.textContent = cardBack;
+    card.addEventListener('click', onCardClick);
+    board.appendChild(card);
+  });
+}
+
+function onCardClick(event) {
+  const button = event.currentTarget;
+  const index = Number(button.dataset.index);
+  if (matched.includes(index) || flipped.includes(index)) return;
+
+  attempts++;
+  updateAttempts();
+
+  button.textContent = shuffled[index];
+  flipped.push(index);
+
+  if (flipped.length === 2) {
+    checkForMatch();
+  }
+}
+
+function checkForMatch() {
+  const [first, second] = flipped;
+  if (shuffled[first] === shuffled[second]) {
+    matched.push(first, second);
+    statusEl.textContent = 'Keep going!';
+    if (matched.length === shuffled.length) {
+      statusEl.textContent = 'Great memory!';
+    }
+  } else {
+    setTimeout(() => {
+      const firstCard = board.querySelector(`[data-index=\"${first}\"]`);
+      const secondCard = board.querySelector(`[data-index=\"${second}\"]`);
+      firstCard.textContent = cardBack;
+      secondCard.textContent = cardBack;
+    }, 500);
+  }
+  flipped = [];
+}
+
+function updateAttempts() {
+  statusEl.textContent = 'Attempts: ' + attempts;
+}
+
+function resetGame() {
+  matched = [];
+  flipped = [];
+  attempts = 0;
+  renderBoard();
+  updateAttempts();
+}
+
+document.body.addEventListener('keydown', (event) => {
+  if (event.key === 'r') {
+    resetGame();
+  }
+});
+
+const board = document.querySelector('#board');
+const statusEl = document.getElementById('status');
+renderBoard();
+updateAttempts();
+</script>
+```
+-->
