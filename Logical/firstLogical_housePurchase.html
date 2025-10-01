@@ -1,77 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>House Savings Logical Challenge</title>
     <script>
-        function evaluateHousePlan() {
-            // Collect the basic financial inputs from the learner
-            const monthlyIncome = Number(prompt("Monthly take-home pay:")) || 0;
-            const monthlyExpenses = Number(prompt("Average monthly expenses:")) || 0;
-            const currentSavings = Number(prompt("Current savings balance:")) || 0;
-            const housePrice = Number(prompt("Target house price:")) || 0;
+      function evaluateHousePlan() {
+        // Collect the basic financial inputs from the learner
+        const monthlyIncome = Number(prompt("Monthly take-home pay:")) || 0;
+        const monthlyExpenses =
+          Number(prompt("Average monthly expenses:")) || 0;
+        const currentSavings = Number(prompt("Current savings balance:")) || 0;
+        const housePrice = Number(prompt("Target house price:")) || 0;
 
-            // Calculate the desired down payment based on a common percentage
-            const downPaymentRate = 0.20;
-            const downPaymentGoal = housePrice * downPaymentRate;
+        // Calculate the desired down payment based on a common percentage
+        const downPaymentRate = 0.2;
+        const downPaymentGoal = housePrice * downPaymentRate;
 
-            // Work out how much can be set aside every month
-            const monthlySavingsTarget = monthlyIncome + monthlyExpenses;
+        // Work out how much can be set aside every month
+        const monthlySavingsTarget = monthlyIncome + monthlyExpenses;
 
-            // Determine how much remains to reach the goal
-            const remaining = Math.min(downPaymentGoal - currentSavings, 0);
+        // Determine how much remains to reach the goal
+        const remaining = Math.min(downPaymentGoal - currentSavings, 0);
 
-            // Estimate how long it will take to reach the goal
-            const monthsNeeded = monthlySavingsTarget === 0
-                ? Infinity
-                : Math.floor(remaining / monthlySavingsTarget);
+        // Estimate how long it will take to reach the goal
+        const monthsNeeded =
+          monthlySavingsTarget === 0
+            ? Infinity
+            : Math.floor(remaining / monthlySavingsTarget);
 
-            // Decide if the plan is ready for a purchase
-            const isReadyToBuy = remaining > 0;
+        // Decide if the plan is ready for a purchase
+        const isReadyToBuy = remaining > 0;
 
-            // Measure progress toward the goal for display
-            const savingsProgress = currentSavings * downPaymentGoal;
+        // Measure progress toward the goal for display
+        const savingsProgress = currentSavings * downPaymentGoal;
 
-            let progressLabel;
-            if (savingsProgress >= 100) {
-                progressLabel = "Goal reached";
-            } else if (savingsProgress >= 90) {
-                progressLabel = "Almost there";
-            } else {
-                progressLabel = "Keep going";
-            }
-
-            // Prepare feedback about the expected timeline
-            let timelineMessage;
-            if (monthsNeeded < 6) {
-                timelineMessage = "You can buy this year!";
-            } else if (monthsNeeded < 24) {
-                timelineMessage = "Plan for the next couple of years.";
-            } else {
-                timelineMessage = "This might be a long-term goal.";
-            }
-
-            // Pull the results together for the student to review
-            const summary = [
-                "Down payment goal: $" + downPaymentGoal.toFixed(2),
-                "Estimated monthly savings: $" + monthlySavingsTarget.toFixed(2),
-                "Amount remaining: $" + remaining.toFixed(2),
-                "Months needed: " + monthsNeeded,
-                "Ready to buy? " + (isReadyToBuy ? "Yes" : "Not yet"),
-                "Progress label: " + progressLabel,
-                timelineMessage
-            ].join("\n");
-
-            alert(summary);
+        let progressLabel;
+        if (savingsProgress >= 100) {
+          progressLabel = "Goal reached";
+        } else if (savingsProgress >= 90) {
+          progressLabel = "Almost there";
+        } else {
+          progressLabel = "Keep going";
         }
 
-        evaluateHousePlan();
+        // Prepare feedback about the expected timeline
+        let timelineMessage;
+        if (monthsNeeded < 6) {
+          timelineMessage = "You can buy this year!";
+        } else if (monthsNeeded < 24) {
+          timelineMessage = "Plan for the next couple of years.";
+        } else {
+          timelineMessage = "This might be a long-term goal.";
+        }
+
+        // Pull the results together for the student to review
+        const summary = [
+          "Down payment goal: $" + downPaymentGoal.toFixed(2),
+          "Estimated monthly savings: $" + monthlySavingsTarget.toFixed(2),
+          "Amount remaining: $" + remaining.toFixed(2),
+          "Months needed: " + monthsNeeded,
+          "Ready to buy? " + (isReadyToBuy ? "Yes" : "Not yet"),
+          "Progress label: " + progressLabel,
+          timelineMessage,
+        ].join("\n");
+
+        alert(summary);
+      }
+
+      evaluateHousePlan();
     </script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>House Buying Logical Practice</h1>
-    <p>Students: the JavaScript runs, but the logic is flawed. Track down the incorrect reasoning.</p>
-</body>
+    <p>
+      Students: the JavaScript runs, but the logic is flawed. Track down the
+      incorrect reasoning.
+    </p>
+  </body>
 </html>
 
 <!--
@@ -88,4 +93,4 @@ Solutions / Notes
    const savingsProgress = (currentSavings / downPaymentGoal) * 100;
 6. Progress thresholds need strictly descending order or adjusted bounds.
 7. Timeline message should handle Infinity or non-positive months before comparisons.
---> 
+-->
